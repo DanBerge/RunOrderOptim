@@ -1,0 +1,51 @@
+Class,ClassGroup,BumpClass,Enable
+SS,Street,C1,TRUE
+AS,Street,C1,TRUE
+BS,Street,C1,TRUE
+CS,Street,C1,TRUE
+DS,Street,C1,TRUE
+ES,Street,C1,TRUE
+FS,Street,C1,TRUE
+GS,Street,C1,TRUE
+HS,Street,C1,TRUE
+SSC,Spec,C2,TRUE
+STS,Street Touring,C2,TRUE
+STX,Street Touring,C2,TRUE
+STR,Street Touring,C2,TRUE
+STU,Street Touring,C2,TRUE
+STH,Street Touring,C2,TRUE
+SSP,Street Prepared,C2,TRUE
+ASP,Street Prepared,C2,TRUE
+BSP,Street Prepared,C2,TRUE
+CSP,Street Prepared,C2,TRUE
+DSP,Street Prepared,C2,TRUE
+ESP,Street Prepared,C2,TRUE
+FSP,Street Prepared,C2,TRUE
+SSR,Street Prepared,C2,TRUE
+CAMC,Classic American,C2,TRUE
+CAMT,Classic American,C2,TRUE
+CAMS,Classic American,C2,TRUE
+XP,Prepared,C2,TRUE
+BP,Prepared,C2,TRUE
+CP,Prepared,C2,TRUE
+DP,Prepared,C2,TRUE
+EP,Prepared,C2,TRUE
+FP,Prepared,C2,TRUE
+SMF,Street Modified,C2,TRUE
+SMF,Street Modified,C2,TRUE
+SSM,Street Modified,C2,TRUE
+AM,Modified,C2,TRUE
+BM,Modified,C2,TRUE
+CM,Modified,C2,TRUE
+DM,Modified,C2,TRUE
+EM,Modified,C2,TRUE
+FM,Modified,C2,TRUE
+FSAE,Modified,C2,TRUE
+KM,Kart,C2,TRUE
+JA,Kart,C2,FALSE
+JB,Kart,C2,FALSE
+JC,Kart,C2,FALSE
+P,Pro,,TRUE
+Z,PAX Index,,TRUE
+V,Vintage,,TRUE
+X,Exhibition,,TRUE
