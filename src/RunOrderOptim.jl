@@ -5,8 +5,6 @@ using DataFrames, CSV, Convex, GLPKMathProgInterface, Query, Tables
 const _example_classes=(@__DIR__) * "\\..\\Examples\\ClassList.csv"
 const _example_entries=(@__DIR__) *" \\..\\Examples\\EntriesExample.csv"
 
-# greetings()=(@__DIR__) * "\\..\\Examples\\ClassList.csv"
-
 function read_classes(fullpath::AbstractString=_example_classes;
     truestrings=["TRUE","True","true"],falsestrings=["FALSE","False","false"],kwargs...)
 
@@ -42,16 +40,13 @@ function setup_problem(classes,entries;run_groups::Integer=2,keep_empty=false,
     # @info separate_classes
     df=_class_counts(classes,entries;keep_empty=keep_empty)
 
-    # @info "Remove Novices"
-    # df=df |> @filter(_.ClassGroup != "Novice") |> DataFrame
-
     #constants for DCP
     r=Variable((nrow(df),run_groups),:Bin)
 
-
     #Set basic constraints
     constr = sum(r,dims=2) == 1 #Each class runs once
-    #Bump Classes
+
+    #Bump Classes - Place bump classes together when entries in class sizes are below minimum
     for bumpclass=unique(skipmissing(df.BumpClass))
         ind=[i for (i,x) in enumerate(Tables.rows(df)) if isequal(x.BumpClass,bumpclass) && x.Drivers < min_class_size]
         isempty(ind) && continue
@@ -68,7 +63,7 @@ function setup_problem(classes,entries;run_groups::Integer=2,keep_empty=false,
         end
     end
 
-    #Separate classes
+    #Separate specified classes
     for (a,b) in separate_classes
         ind_a=findfirst(isequal(a),df.Class)
         ind_b=findfirst(isequal(b),df.Class)
