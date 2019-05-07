@@ -8,7 +8,7 @@ const _example_entries=(@__DIR__) *" \\..\\Examples\\EntriesExample.csv"
 function read_classes(fullpath::AbstractString=_example_classes;
     truestrings=["TRUE","True","true"],falsestrings=["FALSE","False","false"],kwargs...)
 
-    df=CSV.read(fullpath;allowmissing=:auto,truestrings=truestrings,falsestrings=falsestrings,kwargs...)
+    df=CSV.read(fullpath;truestrings=truestrings,falsestrings=falsestrings,kwargs...)
     df=df |> @filter(_.Enable==true) |> DataFrame
     deletecols!(df,:Enable)
     df=vcat(df, DataFrame(Class="N".*('A':'Z'),ClassGroup="Novice",BumpClass=missing,))
@@ -18,13 +18,13 @@ end
 function read_entries(fullpath::AbstractString=_example_entries;
     novice="N", truestrings=["TRUE","True","true"],falsestrings=["FALSE","False","false"],kwargs...)
 
-    df=CSV.read(fullpath;allowmissing=:all,truestrings=truestrings,falsestrings=falsestrings,kwargs...)
+    df=CSV.read(fullpath;truestrings=truestrings,falsestrings=falsestrings,kwargs...)
     rename!(df, [Symbol("Last Name")=>:LastName, Symbol("First Name")=>:FirstName,
         Symbol("Modifier/PAX")=>:Index])
     df=df[[:LastName,:FirstName,:Class,:Index,:Exempt]]
     df.Novice = df |> @map(_.Class == novice) |> collect
     df.Exempt = coalesce.(df.Exempt,false)
-    df = df |> @mutate(Class = _.Novice ? "N"*first(_.LastName[]) : _.Class) |> Tables.rows |> DataFrame
+    df = df |> @mutate(Class = _.Novice ? "N"*first(Ref(_.LastName)) : _.Class) |> Tables.rows |> DataFrame
     df.IndexedClass = coalesce.(df.Index,df.Class)
 
     return df
