@@ -5,6 +5,7 @@ using DataFrames, CSV, Convex, GLPKMathProgInterface, Query, Tables
 const _example_classes=(@__DIR__) * "\\..\\Examples\\ClassList.csv"
 const _example_entries=(@__DIR__) *" \\..\\Examples\\EntriesExample.csv"
 
+#TODO - Make sure each class is only entered once
 function read_classes(fullpath::AbstractString=_example_classes;
     truestrings=["TRUE","True","true"],falsestrings=["FALSE","False","false"],kwargs...)
 
@@ -12,6 +13,7 @@ function read_classes(fullpath::AbstractString=_example_classes;
     df=df |> @filter(_.Enable==true) |> DataFrame
     deletecols!(df,:Enable)
     df=vcat(df, DataFrame(Class="N".*('A':'Z'),ClassGroup="Novice",BumpClass=missing,))
+
     return df
 end
 
@@ -24,8 +26,15 @@ function read_entries(fullpath::AbstractString=_example_entries;
     df=df[[:LastName,:FirstName,:Class,:Index,:Exempt]]
     df.Novice = df |> @map(_.Class == novice) |> collect
     df.Exempt = coalesce.(df.Exempt,false)
-    df = df |> @mutate(Class = _.Novice ? "N"*first(Ref(_.LastName)) : _.Class) |> Tables.rows |> DataFrame
+    df = df |> @mutate(Class = _.Novice ? "N"*first(Ref(_.LastName)[]) : _.Class) |> Tables.rows |> DataFrame
     df.IndexedClass = coalesce.(df.Index,df.Class)
+
+    #Ensure no Novice class entries are in an indexed class
+    for x in Tables.rows(df)
+        if x.Novice && !ismissing(x.Index)
+            error("$(x.FirstName) $(x.LastName) is registered as Novice, but also in $(x.Index) index")
+        end
+    end
 
     return df
 end
@@ -36,6 +45,13 @@ function setup_problem(classes,entries;run_groups::Integer=2,keep_empty=false,
     @assert workerweight > 0
     @assert driverweight > 0
     @assert noviceweight > 0
+
+    #Ensure all entries are in a valid class
+    let classes=Set(classes.Class)
+        for x in Tables.rows(entries)
+            x.Class in classes || error("$(x.FirstName) $(x.LastName) is registered in $(x.Class), which is not found in class list")
+        end
+    end
 
     # @info separate_classes
     df=_class_counts(classes,entries;keep_empty=keep_empty)
@@ -78,8 +94,8 @@ function setup_problem(classes,entries;run_groups::Integer=2,keep_empty=false,
         r[ind,:]' * df.Drivers[ind]
     end
 
-    constr += maximum(drivers) - minimum(drivers) <= 6
-    constr += maximum(novice) - minimum(novice) <= 8
+    # constr += maximum(drivers) - minimum(drivers) <= 6
+    # constr += maximum(novice) - minimum(novice) <= 8
 
     worker_diff = maximum(workers) - minimum(workers)
     driver_diff = maximum(drivers) - minimum(drivers)
@@ -97,7 +113,10 @@ function _class_counts(classes,entries;keep_empty=true)
         @select {Class=key(g),Drivers=length(g),Workers=sum(.!g.Exempt)}
         @collect DataFrame
     end
+
+    #TODO - Double check if outer join is appropriate, or if it should be left/right join?
     df=join(df,classes,on=:Class,kind=:outer)
+
     df.Drivers=coalesce.(df.Drivers,0)
     df.Workers=coalesce.(df.Workers,0)
     if !keep_empty
