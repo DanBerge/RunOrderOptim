@@ -1,6 +1,6 @@
 module RunOrderOptim
 
-using DataFrames, CSV, Convex, GLPKMathProgInterface, Query, Tables
+using DataFrames, CSV, Convex, GLPKMathProgInterface, Query, Tables, MathOptInterface
 
 const _example_classes=(@__DIR__) * "\\..\\Examples\\ClassList.csv"
 const _example_entries=(@__DIR__) *" \\..\\Examples\\EntriesExample.csv"
@@ -127,7 +127,7 @@ end
 
 function full_solution(a)
 
-    @assert a.problem.status ==:Optimal
+    @assert a.problem.status == MathOptInterface.OPTIMAL
 
     workers=Int.(evaluate(a.workers)) |> vec
     drivers=Int.(evaluate(a.drivers)) |> vec
